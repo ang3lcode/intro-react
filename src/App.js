@@ -2,8 +2,6 @@ import React from 'react';
 import { AppUi } from "./AppUI/AppUi";
 import './App.css';
 
-
-
 // const defaultTodos=[
 //   {text:'Cortar cebolla', completed:false},
 //   {text:'Tormar el curso de intro a react', completed:false},
@@ -11,36 +9,65 @@ import './App.css';
 // ];
 
 function useLocalStorage (itemName, initialValue) {
-  const localStorageItem = localStorage.getItem(itemName);
-  let parsedItem;
+
+  const [error, setError] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [item, setItem] = React.useState(initialValue);
   
-  if (!localStorageItem) {
-    localStorage.setItem(itemName, JSON.stringify(initialValue));
-    parsedItem = initialValue;
-  } else {
-    parsedItem = JSON.parse(localStorageItem);
-  }
-  
-  const [item, setItem] = React.useState(parsedItem);
+  React.useEffect(() => {
+  // Simulamos un segundo de delay de carga 
+    setTimeout(() => {
+      // Manejamos la tarea dentro de un try/catch por si ocurre algún error
+      try {
+        const localStorageItem = localStorage.getItem(itemName);
+        let parsedItem;
+        
+        if (!localStorageItem) {
+          localStorage.setItem(itemName, JSON.stringify(initialValue));
+          parsedItem = initialValue;
+        } else {
+          parsedItem = JSON.parse(localStorageItem);
+        }
+
+        setItem(parsedItem);
+      } catch(error) {
+      // En caso de un error lo guardamos en el estado
+        setError(error);
+      } finally {
+        setLoading(false);
+      }
+    }, 1000);
+  });
 
   const saveItem = (newItem) => {
-    const stringifiedItem = JSON.stringify(newItem);
-    localStorage.setItem(itemName, stringifiedItem);
-    setItem(newItem);
+    try {
+      const stringifiedItem = JSON.stringify(newItem);
+      localStorage.setItem(itemName, stringifiedItem);
+      setItem(newItem);
+    } catch {
+      setError(error);
+    }
   };
 
-  return [
+  return {
     item,
     saveItem,
-  ];
+    error,
+    loading,
+  };
 }
 
 export function App() {
 
-  const [todos, saveTodos] = useLocalStorage('TODOS_V1', []);
+  const {
+    item: todos,
+    saveItem: saveTodos,
+    loading,
+    error,
+  } = useLocalStorage('TODOS_V1', []);
   
   const [searchValue, setSearchValue] = React.useState('');
-  
+
   const completedTodos = todos.filter(todo => !!todo.completed).length;
   const totalTodos = todos.length;
 
@@ -69,8 +96,16 @@ export function App() {
     saveTodos(newTodos);
   };
 
+  // console.log('render(antes del useEffect)')
+  // React.useEffect(() => {
+  //   console.log('useEffect')
+  // }, [totalTodos]);
+  // console.log('render(despues del useEffect)')
+
   return (
     <AppUi
+      loading={loading}
+      error={error}
       totalTodos={totalTodos}
       completedTodos={completedTodos}
       searchValue={searchValue}
