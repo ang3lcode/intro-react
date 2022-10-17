@@ -1,14 +1,11 @@
-import React from 'react'
+import React from 'react';
+import { AppUi } from "./AppUI/AppUi";
 import './App.css';
-import  { TodoCounter } from './TodoCounter/TodoCounter';
-import  { TodoSearch } from './TodoSearch/TodoSearch';
-import  { TodoList } from './TodoList/TodoList';
-import  { TodoItem } from './TodoItem/TodoItem';
-import  { CreateTodoButtom } from './CreateTodoButton/CreateTodoButton';
+
 
 
 const defaultTodos=[
-  {text:'Cortar cebolla', completed:true},
+  {text:'Cortar cebolla', completed:false},
   {text:'Tormar el curso de intro a react', completed:false},
   {text:'Llorar con la llorona', completed:false}
 ];
@@ -33,6 +30,7 @@ export function App() {
     const todoIndex = todos.findIndex(todo => todo.text === text);
     const newTodos = [...todos];
     newTodos[todoIndex].completed = true;
+    setTodos(newTodos);
   };
   const deleteTodo = (text) => {
     const todoIndex = todos.findIndex(todo => todo.text === text);
@@ -44,27 +42,15 @@ export function App() {
 
   return (
     <>
-      <p id = "aqui">hola</p>
-      <TodoCounter
-        total={totalTodos}
-        completed={completedTodos}
-      />
-      <TodoSearch
+      <AppUi
+        totalTodos={totalTodos}
+        completedTodos={completedTodos}
         searchValue={searchValue}
         setSearchValue={setSearchValue}
+        searchedTodos={searchedTodos}
+        completeTodo={completeTodo}
+        deleteTodo={deleteTodo}
       />
-      <TodoList>
-        {searchedTodos.map(todo => (   
-        <TodoItem 
-            key = { todo.text } 
-            text = { todo.text }
-            completed={todo.completed}
-            onComplete={() => completeTodo(todo.text)}
-            onDelete={() => deleteTodo(todo.text)}
-          />
-        ))}
-      </TodoList>
-      <CreateTodoButtom/>
     </>
   );
 }
